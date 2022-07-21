@@ -173,10 +173,14 @@ winner scores player1 player2 = if player1Score >= player2Score then player1 els
 --   freqs [False,False,False,True]
 --     ==> Map.fromList [(False,3),(True,1)]
 
-f x xs = map.alter (\x -> if Map.lookup x xs ) xs
+count ::(Eq a, Ord a) =>  a -> Map.Map a Int -> Map.Map a Int
+count key counter =
+    case Map.lookup key counter of
+       Nothing -> Map.insert key 1 counter
+       Just x -> Map.insert key (x+1) counter
 
 freqs :: (Eq a, Ord a) => [a] -> Map.Map a Int
-freqs xs = foldr f Map.empty xs
+freqs xs = foldr count Map.empty xs
 
 ------------------------------------------------------------------------------
 -- Ex 10: recall the withdraw example from the course material. Write a
@@ -203,8 +207,26 @@ freqs xs = foldr f Map.empty xs
 --   transfer "Lisa" "Mike" 20 bank
 --     ==> fromList [("Bob",100),("Mike",50)]
 
+operation :: String -> Int -> Map.Map String Int -> Int-> Map.Map String Int
+operation account amount bank sign =
+  case Map.lookup account bank of
+    Nothing  -> bank                                   -- account not found, no change
+    Just sum -> Map.insert account (sum + sign * amount) bank   -- set new balance
+
+
+bankrupt :: String -> Int -> Map.Map String Int -> Bool
+bankrupt account amount bank =
+      case Map.lookup account bank of
+        Nothing  -> False
+        Just sum -> if sum < amount then True else False
+
+
 transfer :: String -> String -> Int -> Map.Map String Int -> Map.Map String Int
-transfer from to amount bank = todo
+transfer from to amount bank
+    | (Map.notMember from bank) || (Map.notMember to bank) || amount < 0 || bankrupt from amount bank = bank
+    | otherwise = operation to amount (operation from amount bank (-1)) 1
+
+
 
 ------------------------------------------------------------------------------
 -- Ex 11: given an Array and two indices, swap the elements in the indices.
@@ -214,7 +236,7 @@ transfer from to amount bank = todo
 --         ==> array (1,4) [(1,"one"),(2,"three"),(3,"two"),(4,"four")]
 
 swap :: Ix i => i -> i -> Array i a -> Array i a
-swap i j arr = todo
+swap i j arr = arr // [(i, arr ! j), (j, arr ! i)]
 
 ------------------------------------------------------------------------------
 -- Ex 12: given an Array, find the index of the largest element. You
@@ -225,4 +247,5 @@ swap i j arr = todo
 -- Hint: check out Data.Array.indices or Data.Array.assocs
 
 maxIndex :: (Ix i, Ord a) => Array i a -> i
-maxIndex = todo
+maxIndex arr = fst $ head $ filter (\(x,y) -> y == maximum (elems arr)) (assocs arr)
+

@@ -9,7 +9,16 @@ University of Helsinki
 [![License: CC BY-SA 4.0](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)](http://creativecommonse.org/licenses/by-sa/4.0/)
 
 This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
+## Progress
 
+| Part | Exercise | Points |
+|------|----------|--------|
+| 1    | Set1.hs  | 11/11  |
+| 2    | Set2a.hs | 11/11  |
+| 3    | Set3a.hs | 14/14  |
+| 4    | Set3b.hs | 10/10  |
+| 5    | Set4a.hs | 12/12  |
+| 6    | Set5a.hs | 0/12   |
 ## About the course
 
 This is an online course on Functional Programming that uses the
