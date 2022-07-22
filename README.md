@@ -18,7 +18,8 @@ This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 Inter
 | 3    | Set3a.hs | 14/14  |
 | 4    | Set3b.hs | 10/10  |
 | 5    | Set4a.hs | 12/12  |
-| 6    | Set5a.hs | 0/12   |
+| 6    | Set5a.hs | 11/12  |
+| 6    | Set5b.hs | 10/10  |
 ## About the course
 
 This is an online course on Functional Programming that uses the
