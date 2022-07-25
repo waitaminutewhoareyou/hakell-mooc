@@ -88,11 +88,12 @@ instance Eq a => Eq (List a) where
 
 data Egg = ChickenEgg | ChocolateEgg
   deriving Show
+
 data Milk = Milk Int -- amount in litres
   deriving Show
 
 class Price a where
-    price:: a -> Int
+    price :: a -> Int
 
 instance Price Egg where
     price food = case food of ChickenEgg -> 20
@@ -100,7 +101,6 @@ instance Price Egg where
 
 instance Price Milk where
     price (Milk volume) = 15 * volume
-
 ------------------------------------------------------------------------------
 -- Ex 6: define the necessary instance hierarchy in order to be able
 -- to compute these:
@@ -110,8 +110,13 @@ instance Price Milk where
 -- price [Just ChocolateEgg, Nothing, Just ChickenEgg]  ==> 50
 -- price [Nothing, Nothing, Just (Milk 1), Just (Milk 2)]  ==> 45
 
-instance Maybe [a] where
-    price (Just x) =
+instance Price a =>  Price (Maybe a) where
+    price Nothing = 0
+    price (Just x) = price x
+
+instance Price a =>  Price [a] where
+    price xs = sum (map price xs)
+
 
 ------------------------------------------------------------------------------
 -- Ex 7: below you'll find the datatype Number, which is either an
@@ -122,6 +127,17 @@ instance Maybe [a] where
 
 data Number = Finite Integer | Infinite
   deriving (Show,Eq)
+
+instance Ord Number where
+
+    Finite x <= Infinite = True
+    Infinite <= Finite x = False
+
+    Infinite <= Infinite = True
+
+    Finite  x <= Finite y
+        | x <= y = True
+        | otherwise = False
 
 
 ------------------------------------------------------------------------------
@@ -148,7 +164,7 @@ data RationalNumber = RationalNumber Integer Integer
   deriving Show
 
 instance Eq RationalNumber where
-  p == q = todo
+    RationalNumber a b == RationalNumber c d = a*d == b*c
 
 ------------------------------------------------------------------------------
 -- Ex 9: implement the function simplify, which simplifies rational a
@@ -167,8 +183,19 @@ instance Eq RationalNumber where
 --
 -- Hint: Remember the function gcd?
 
+myGcd :: Integer -> Integer -> Integer
+myGcd a 0 = a
+myGcd 0 b = b
+myGcd a b = myGcd smaller diff
+            where smaller = if a < b then a else b
+                  diff = if a < b then b-a else a-b
+
 simplify :: RationalNumber -> RationalNumber
-simplify p = todo
+simplify (RationalNumber a b)
+        | a < 0 =  let commonDivisor = (myGcd (-a) b)
+                   in (RationalNumber (a `div` commonDivisor) (b `div` commonDivisor))
+        | otherwise = let commonDivisor = (myGcd a b)
+                      in (RationalNumber (a `div` commonDivisor) (b `div` commonDivisor))
 
 ------------------------------------------------------------------------------
 -- Ex 10: implement the typeclass Num for RationalNumber. The results
@@ -187,14 +214,21 @@ simplify p = todo
 --   abs (RationalNumber (-3) 2)             ==> RationalNumber 3 2
 --   signum (RationalNumber (-3) 2)          ==> RationalNumber (-1) 1
 --   signum (RationalNumber 0 2)             ==> RationalNumber 0 1
+helper x  = if x >= 0 then x else -x
 
 instance Num RationalNumber where
-  p + q = todo
-  p * q = todo
-  abs q = todo
-  signum q = todo
-  fromInteger x = todo
-  negate q = todo
+
+  (RationalNumber a b) + (RationalNumber c d) = simplify (RationalNumber (a*d + b*c)  (b*d))
+  (RationalNumber a b) * (RationalNumber c d) = simplify (RationalNumber (a*c)  (b*d))
+  abs (RationalNumber a b)
+            | a * b < 0 = simplify (RationalNumber (-a)  b)
+            | otherwise = simplify (RationalNumber a  b)
+  signum (RationalNumber a b)
+            | a * b < 0 = -1
+            | a * b == 0 = 0
+            | otherwise = 1
+  fromInteger x = (RationalNumber x 1)
+  negate (RationalNumber a b) = simplify (RationalNumber (-a)  b)
 
 ------------------------------------------------------------------------------
 -- Ex 11: a class for adding things. Define a class Addable with a
@@ -209,6 +243,17 @@ instance Num RationalNumber where
 --   add [1,2] [3,4]        ==>  [1,2,3,4]
 --   add zero [True,False]  ==>  [True,False]
 
+class Addable a where
+    zero :: a
+    add  :: a -> a -> a
+
+instance Addable Integer where
+    zero = 0
+    add x y = x + y
+
+instance Addable [a] where
+    zero = []
+    add x y = (x ++ y)
 
 ------------------------------------------------------------------------------
 -- Ex 12: cycling. Implement a type class Cycle that contains a
@@ -239,4 +284,28 @@ data Color = Red | Green | Blue
   deriving (Show, Eq)
 data Suit = Club | Spade | Diamond | Heart
   deriving (Show, Eq)
+
+class Cycle a where
+    step :: a -> a
+    stepMany :: Int -> a -> a
+    stepMany n suit
+        | n == 0 = suit
+        | otherwise = stepMany (n-1) (step suit)
+
+instance Cycle Color where
+    step Red = Green
+    step Green = Blue
+    step Blue = Red
+
+--    stepMany n color
+--      | n == 0 = color
+--      | otherwise = stepMany (n-1) (step color)
+
+instance Cycle Suit where
+    step Club = Spade
+    step Spade = Diamond
+    step Diamond = Heart
+    step Heart = Club
+
+
 
